@@ -1,0 +1,12 @@
+{
+  "name": "modo",
+  "description": "Structured developer methodology harness — working modes, team practices, and project workflow for any software team",
+  "version": "0.1.0",
+  "author": {
+    "name": "Curiosity Arc",
+    "email": "hello@curiosityarc.org"
+  },
+  "homepage": "https://github.com/curiosityarc/modo",
+  "repository": "https://github.com/curiosityarc/modo",
+  "license": "MIT"
+}
