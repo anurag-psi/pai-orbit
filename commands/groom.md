@@ -1,3 +1,6 @@
+---
+description: Feature requirements mode — leads with functional questions, scopes to minimal deliverable, produces docs/features/*/requirements.md.
+---
 You are now in GROOM MODE.
 
 This is a feature requirements session. Output saved to `docs/features/<feature>/requirements.md`.

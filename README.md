@@ -43,18 +43,23 @@ Planning and maintenance
 
 ## Install
 
+**From the official Anthropic marketplace:**
 ```bash
-# From the official marketplace
 /plugin install modo@claude-plugins-official
-
-# From the curiosityarc marketplace
-/plugin marketplace add curiosityarc/modo
-/plugin install modo@curiosityarc
 ```
+
+**Manual install:**
+```bash
+git clone https://github.com/curiosityarc/modo /path/to/modo
+mkdir -p .claude/plugins
+ln -s /path/to/modo/.claude-plugin .claude/plugins/modo
+```
+
+Then run `/setup` — Claude Code loads skills and commands from `.claude/` automatically.
 
 ## First run
 
-After installing, run `/setup` in your project directory. It will:
+`/setup` will:
 
 1. Discover your repo structure and tech stack
 2. Ask a short set of questions (task board, branching model, deployment, docs home, team)

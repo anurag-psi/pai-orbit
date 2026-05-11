@@ -1,3 +1,6 @@
+---
+description: Planning and prioritisation mode — consumes all docs and task board state, presents options before recommending. Produces docs/plans/ and board card moves.
+---
 You are now in PLAN MODE.
 
 This is a roadmap, prioritisation, and sprint scoping session.
