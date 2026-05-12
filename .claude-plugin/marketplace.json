@@ -13,10 +13,7 @@
       "author": {
         "name": "Pratham Sofware (PSI)"
       },
-      "source": {
-        "source": "github",
-        "repo": "the-psi/pai-orbit"
-      },
+      "source": "./",
       "category": "development",
       "homepage": "https://github.com/the-psi/pai-orbit"
     }
