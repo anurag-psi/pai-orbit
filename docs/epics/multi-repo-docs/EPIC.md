@@ -32,5 +32,5 @@ Enable PAI-Orbit to manage documentation across service repos and a central syst
 <!-- Decisions made during this epic's lifetime -->
 
 ## Open Questions
-- [ ] Should `system_docs_repo` support git URLs in addition to relative paths? — owner: Punit Singhal
-- [ ] Which existing commands need awareness of the system repo beyond `/plan`, `/domain`, and `/build`? — owner: Punit Singhal
+- [x] Should `system_docs_repo` support git URLs in addition to relative paths? — Yes. Both relative paths and git URLs are supported; git URLs must be cloned locally before use. Resolved in multi-repo-docs-config.
+- [x] Which existing commands need awareness of the system repo beyond `/plan`, `/domain`, and `/build`? — `/groom` and `/design` were also added. All five commands (`/plan`, `/domain`, `/groom`, `/design`, `/build`) resolve `system_docs_repo` at session start. Resolved in multi-repo-docs-config.
