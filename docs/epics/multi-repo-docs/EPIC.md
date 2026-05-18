@@ -1,8 +1,8 @@
 # Multi-Repo Docs
 
-**Status:** Draft
+**Status:** Complete
 **Owner:** Punit Singhal
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 
 ## Summary
 Enable PAI-Orbit to manage documentation across service repos and a central system repo, supporting microservices projects with cross-cutting concerns.
