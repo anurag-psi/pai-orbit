@@ -16,54 +16,40 @@ The core problem it solves: knowledge lives only in chat conversations and disap
 
 ## Directory Structure
 
+This repo is a **Claude Code marketplace**. The PAI-Orbit plugin lives under `plugins/pai-orbit/` with a tool-agnostic `core/` and per-tool `adapters/` that compile to `dist/`.
+
 ```
-pai-orbit/
-├── .claude-plugin/          Plugin metadata (plugin.json, marketplace.json)
-├── commands/                Slash command definitions (one .md per mode)
-│   ├── arch.md              /arch — system architecture declaration and validation
-│   ├── build.md             /build — implementation
-│   ├── design.md            /design — technical decisions
-│   ├── domain.md            /domain — expert knowledge capture
-│   ├── groom.md             /groom — feature requirements
-│   ├── plan.md              /plan — roadmap and prioritization
-│   ├── ux.md                /ux — user experience design
-│   └── data.md              /data — data exploration (read-only)
-├── skills/                  Multi-step operational procedures
-│   ├── analysis/            Change impact (blast radius) assessment
-│   ├── board/               Task management (GitHub/Linear/Jira)
-│   ├── data-model/          Schema reference and migration planning
-│   ├── deploy/              Guided deployment with preflight checks
-│   ├── epic/                Epic lifecycle management
-│   ├── git/                 Git operations with branching conventions
-│   ├── incident/            Production incident fast-path
-│   ├── review/              Structured code review
-│   ├── security-review/     OWASP Top 10 security pass
-│   ├── setup/               First-time project configuration
-│   ├── simplify/            Code quality and dead-code removal
-│   ├── suggest-skills/      Pattern discovery for custom skills
-│   └── test/                Test planning and QA
-├── agents/                  Named sub-agents
-│   ├── docs-writer.md       Documentation agent (local + Confluence/Notion)
-│   └── cross-repo-impact.md Read-only cross-repo dependency analysis
-├── templates/               Scaffolding output of /setup
-│   ├── agents/              Stack-specific builder agents (7 templates)
-│   ├── docs/                Documentation folder scaffold
-│   │   ├── architecture/    Architecture declaration stubs (system.md, constraints.md, stack.md)
-│   │   └── decisions/       ADR template (ADR.md)
-│   ├── skills/              Domain-operational skill template
-│   ├── CLAUDE.md.template   Project spec stub
-│   ├── pai-orbit-config.md.template
-│   └── team.md.template
-├── hooks/                   Shell hooks wired to Claude Code tool events
-│   ├── bash-guard.sh        PreToolUse — blocks force-push, bulk staging
-│   ├── lint-python.sh       PostToolUse — ruff
-│   ├── lint-ts.sh           PostToolUse — eslint
-│   └── arch-drift-guard.sh  PostToolUse — advisory nudge on structural file edits
-└── docs/                    Framework documentation
-    ├── capabilities.md      Reference: all modes, skills, agents, hooks
-    ├── process-and-practices.md  Methodology philosophy and session flow
-    └── getting-started.md   Install walkthrough and first-run guide
+pai-orbit/                          # repo = marketplace
+├── .claude-plugin/
+│   └── marketplace.json            # marketplace listing; points at dist/claude-code/
+├── plugins/
+│   └── pai-orbit/
+│       ├── core/                   # tool-agnostic source of truth
+│       │   ├── plugin.json
+│       │   ├── modes/              # /arch, /build, /design, /domain, /groom, /plan, /ux, /data
+│       │   ├── skills/             # analysis, board, data-model, deploy, epic, git, incident,
+│       │   │                       # review, security-review, setup, simplify, suggest-skills, test
+│       │   ├── agents/             # docs-writer, cross-repo-impact
+│       │   ├── hooks/              # bash-guard, lint-python, lint-ts, arch-drift-guard
+│       │   └── templates/          # /setup scaffolds (agents, docs, ADR, CLAUDE.md template, …)
+│       ├── adapters/
+│       │   ├── claude-code/        # full fidelity
+│       │   ├── cursor/             # lossy; .cursor/rules/*.mdc
+│       │   ├── copilot/            # lossy; .github/copilot-instructions.md
+│       │   └── codex/              # experimental; AGENTS.md
+│       ├── dist/                   # COMMITTED build outputs (one subdir per adapter)
+│       ├── build.sh                # runs every adapter
+│       └── README.md               # plugin-level README
+└── docs/                           # framework documentation (this repo)
+    ├── capabilities.md             # reference: every mode, skill, agent, hook
+    ├── process-and-practices.md    # methodology philosophy and session flow
+    └── getting-started.md          # install walkthrough and first-run guide
 ```
+
+**Where to edit what:**
+- Modify a mode, skill, agent, hook, or template → edit `plugins/pai-orbit/core/...` and run `bash plugins/pai-orbit/build.sh`.
+- Change how a particular tool gets the plugin → edit the corresponding `plugins/pai-orbit/adapters/<tool>/build.sh`.
+- Never hand-edit `plugins/pai-orbit/dist/` — it is regenerated.
 
 ---
 
@@ -86,7 +72,7 @@ Each `/command` locks Claude into a distinct headspace. Modes do not bleed into 
 
 ### Skills
 
-Skills are multi-step procedures callable from any mode. Each skill lives in `skills/<name>/` and is registered in `.claude-plugin/plugin.json`.
+Skills are multi-step procedures callable from any mode. Each skill lives in `plugins/pai-orbit/core/skills/<name>/`.
 
 Key skills: `/git`, `/board`, `/deploy`, `/analysis`, `/security-review`, `/review`, `/simplify`, `/incident`, `/data-model`, `/epic`, `/suggest-skills`, `/setup`, `/test`.
 
@@ -158,45 +144,63 @@ docs/
 
 ## Installation
 
+End users install directly from GitHub — no clone required:
+
 ```bash
-# Clone into a local plugins directory
-git clone https://github.com/the-psi/pai-orbit ~/.claude/plugins/pai-orbit
-
-# Symlink the plugin into a target project
-ln -s ~/.claude/plugins/pai-orbit/.claude-plugin .claude/plugins/pai-orbit
-
-# Reload plugins in Claude Code
-/reload-plugins
+/plugin marketplace add the-psi/pai-orbit
+/plugin install PAI-Orbit@pai-orbit
 ```
 
-Then run `/setup` in the target project to generate all config and scaffold files.
+For local development against a checkout:
+
+```bash
+git clone https://github.com/the-psi/pai-orbit
+/plugin marketplace add /absolute/path/to/pai-orbit
+/plugin install PAI-Orbit@pai-orbit
+```
+
+Marketplace.json points at `plugins/pai-orbit/dist/claude-code/`, which is the committed build output. To rebuild it after editing `core/`, run `bash plugins/pai-orbit/build.sh`.
+
+Then run `/setup` in your target project to generate all config and scaffold files.
+
+For Cursor / GitHub Copilot / OpenAI Codex, install the corresponding bundle from `plugins/pai-orbit/dist/<tool>/` per its README.
 
 ---
 
 ## Working in This Repo
 
-### Adding a New Command
+### Adding a New Mode (slash command)
 
-1. Create `commands/<name>.md` following the pattern in existing command files (headspace declaration, input/output contract, step list, output format).
-2. Register it in `.claude-plugin/plugin.json`.
+1. Create `plugins/pai-orbit/core/modes/<name>.md` following the pattern in existing files (headspace declaration, input/output contract, step list, output format).
+2. Run `bash plugins/pai-orbit/build.sh` to regenerate `dist/`.
 3. Update `docs/capabilities.md` reference table.
 
 ### Adding a New Skill
 
-1. Create `skills/<name>/` directory with a skill `.md` file.
+1. Create `plugins/pai-orbit/core/skills/<name>/` directory with a `SKILL.md` file.
 2. Follow the trigger/skip pattern from existing skills (when to invoke, when not to).
-3. Register in `.claude-plugin/plugin.json`.
+3. Run `bash plugins/pai-orbit/build.sh`.
 4. Update `docs/capabilities.md`.
 
 ### Adding an Agent Template
 
-1. Add to `templates/agents/<stack>-builder.md`.
-2. Update `skills/setup/` to reference it during scaffolding.
-3. Document in `docs/capabilities.md`.
+1. Add to `plugins/pai-orbit/core/templates/agents/<stack>-builder.md`.
+2. Update `plugins/pai-orbit/core/skills/setup/` to reference it during scaffolding.
+3. Run `bash plugins/pai-orbit/build.sh`.
+4. Document in `docs/capabilities.md`.
 
 ### Modifying Hooks
 
-Hooks in `hooks/` are shell scripts. Test changes locally before committing — a broken hook blocks the entire tool use flow for anyone using the plugin.
+Hooks in `plugins/pai-orbit/core/hooks/` are shell scripts. Test changes locally before committing — a broken hook blocks the entire tool-use flow for anyone using the plugin. The Claude Code adapter restores the exec bit on every hook in dist, so source permissions don't matter for distribution.
+
+### Adding an Adapter
+
+To target another tool (e.g., Continue, Aider, Windsurf):
+
+1. Create `plugins/pai-orbit/adapters/<tool>/build.sh`.
+2. Read from `${CORE_DIR:-../../core}`; write to `${DIST_DIR:-../../dist/<tool>}`.
+3. Emit a `dist/<tool>/README.md` documenting what was lossy.
+4. The top-level `build.sh` discovers it automatically via `adapters/*/build.sh`.
 
 ---
 

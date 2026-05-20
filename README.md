@@ -1,8 +1,10 @@
 # PAI-Orbit
 
-A structured developer methodology harness for Claude Code.
+A structured developer methodology harness, distributed as a Claude Code plugin and as rule/instruction bundles for Cursor, GitHub Copilot, and OpenAI Codex.
 
 PAI-Orbit gives your project a shared vocabulary for how work gets done — distinct modes for building, designing, planning, and exploring data; operational skills for git, task management, and deployment; and a first-time setup that generates everything project-specific from a short conversation.
+
+> **This repository is a Claude Code marketplace.** The PAI-Orbit plugin lives at [`plugins/pai-orbit/`](plugins/pai-orbit/). The marketplace currently lists this one plugin; additional plugins can be added alongside it.
 
 ## What it is
 
@@ -84,22 +86,37 @@ Workflow skills (`/git`, `/board`, `/analysis`, `/data-model`, `/security-review
 
 ## Install
 
-```bash
-# From the pratham-software marketplace
-/plugin marketplace add pratham-software/PAI-Orbit
-/plugin install PAI-Orbit@pratham-software
-```
+### Claude Code (full fidelity)
 
 ```bash
-# Clone into a local plugins directory
-git clone https://github.com/the-psi/pai-orbit ~/.claude/plugins/pai-orbit
+# Add the marketplace straight from GitHub
+/plugin marketplace add the-psi/pai-orbit
 
-# Symlink the plugin into a target project
-ln -s ~/.claude/plugins/pai-orbit/.claude-plugin .claude/plugins/pai-orbit
-
-# Reload plugins in Claude Code
-/reload-plugins
+# Install the plugin
+/plugin install PAI-Orbit@pai-orbit
 ```
+
+That's it — Claude Code fetches the repo and resolves the plugin from the marketplace listing. The listing points at `plugins/pai-orbit/dist/claude-code/`, which is the committed, built artifact produced by `plugins/pai-orbit/adapters/claude-code/build.sh`. No clone needed for installation.
+
+If you're developing against a local checkout instead:
+
+```bash
+git clone https://github.com/the-psi/pai-orbit
+/plugin marketplace add /absolute/path/to/pai-orbit
+/plugin install PAI-Orbit@pai-orbit
+```
+
+### Other coding assistants (lossy)
+
+The same plugin source is compiled to per-tool bundles under `plugins/pai-orbit/dist/`. These bundles are **lossy** — modes become always-on rule documents, and there is no command, skill, agent, or hook system in these tools.
+
+| Tool | Path | How to install |
+|------|------|----------------|
+| Cursor | [`plugins/pai-orbit/dist/cursor/`](plugins/pai-orbit/dist/cursor/) | Copy `.cursor/` into your project root |
+| GitHub Copilot | [`plugins/pai-orbit/dist/copilot/`](plugins/pai-orbit/dist/copilot/) | Copy `.github/copilot-instructions.md` into your project |
+| OpenAI Codex CLI (experimental) | [`plugins/pai-orbit/dist/codex/`](plugins/pai-orbit/dist/codex/) | Copy `AGENTS.md` to your project root |
+
+See [`plugins/pai-orbit/README.md`](plugins/pai-orbit/README.md) for adapter internals and how to rebuild the bundles.
 
 ## First run
 

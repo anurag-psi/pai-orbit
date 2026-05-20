@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "local-pai-orbit",
-  "description": "Local PAI-Orbit plugin marketplace",
+  "name": "pai-orbit",
+  "description": "Pratham Software (PSI) plugin marketplace",
   "owner": {
     "name": "Pratham Software (PSI)",
     "email": "pai-orbit@thepsi.com"
@@ -13,7 +13,7 @@
       "author": {
         "name": "Pratham Sofware (PSI)"
       },
-      "source": "./",
+      "source": "./plugins/pai-orbit/dist/claude-code/",
       "category": "development",
       "homepage": "https://github.com/the-psi/pai-orbit"
     }

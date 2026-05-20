@@ -8,33 +8,42 @@
 
 ## Install PAI-Orbit
 
-**Manual install (current recommended path):**
+### Claude Code (recommended)
 
-The Claude Code plugin marketplace is not yet publicly available. Install by cloning the repo and symlinking or copying the plugin directory:
+PAI-Orbit ships as a Claude Code marketplace hosted on GitHub. Install in two commands — no clone required:
 
 ```bash
-# Clone alongside your project (or anywhere convenient)
-git clone https://github.com/the-psi/pai-orbit /path/to/PAI-Orbit
-
-# In your project directory, wire the plugin
-mkdir -p .claude
-ln -s /path/to/PAI-Orbit/.claude-plugin .claude/plugins/PAI-Orbit
+/plugin marketplace add the-psi/pai-orbit
+/plugin install PAI-Orbit@pai-orbit
+/reload-plugins
 ```
 
-Then run `/setup` — Claude Code loads skills and commands from `.claude/` automatically.
+That's the full install. Claude Code fetches the repo, reads `.claude-plugin/marketplace.json`, and resolves the plugin from the committed build at `plugins/pai-orbit/dist/claude-code/`.
 
-**From the official Anthropic marketplace (when available):**
+### Developing against a local checkout
+
+If you're hacking on PAI-Orbit itself, clone and add the local path as a marketplace:
+
 ```bash
-/plugin install PAI-Orbit@claude-plugins-official
+git clone https://github.com/the-psi/pai-orbit
+/plugin marketplace add /absolute/path/to/pai-orbit
+/plugin install PAI-Orbit@pai-orbit
 ```
 
-**From the Pratham Software marketplace (when available):**
+After editing anything under `plugins/pai-orbit/core/`, rebuild with:
+
 ```bash
-/plugin marketplace add pratham-software/PAI-Orbit
-/plugin install PAI-Orbit@thepsi.com
+bash plugins/pai-orbit/build.sh
+/reload-plugins
 ```
 
-After marketplace install, run `/reload-plugins` to apply without restarting.
+### Other coding assistants (lossy)
+
+The same plugin is also built for Cursor, GitHub Copilot, and OpenAI Codex CLI. These bundles are intentionally lossy — no command system, no skills, no agents, no hooks — so they are reference rules/instructions only. Install instructions live alongside each bundle:
+
+- Cursor: `plugins/pai-orbit/dist/cursor/`
+- GitHub Copilot: `plugins/pai-orbit/dist/copilot/`
+- OpenAI Codex CLI (experimental): `plugins/pai-orbit/dist/codex/`
 
 ---
 

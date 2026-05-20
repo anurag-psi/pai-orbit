@@ -95,8 +95,8 @@ Update `.claude/settings.json` to wire the hooks:
 }
 ```
 
-Copy `.claude-plugin/hooks/bash-guard.sh` to `.claude/hooks/bash-guard.sh`.
-Copy `.claude-plugin/hooks/arch-drift-guard.sh` to `.claude/hooks/arch-drift-guard.sh`.
+Copy `hooks/bash-guard.sh` to `.claude/hooks/bash-guard.sh`.
+Copy `hooks/arch-drift-guard.sh` to `.claude/hooks/arch-drift-guard.sh`.
 
 ### Docs scaffold
 
