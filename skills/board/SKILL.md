@@ -31,6 +31,7 @@ Read the column flow from config. Common flows:
 - **GitHub Projects v2:** `gh project item-edit` is unreliable for column moves — instruct browser drag is faster
 - **Linear:** `linear issue update --state <state>`
 - **Jira:** `jira issue transition`
+- **GitLab:** boards are label-driven — each column maps to a scoped label (e.g. `workflow::In Progress`). Moving a card means removing the current workflow label and adding the next one. Read the column→label map from `## Agile Board → columns` in config, then run the label swap (see CLI section below).
 
 ### Closing on ship
 
@@ -66,6 +67,28 @@ linear issue create --title "<title>" --description "<body>" --team <team-id> --
 ```bash
 jira issue create --project <key> --summary "<title>" --description "<body>" --assignee <user-id>
 ```
+
+**GitLab:**
+```bash
+# Create
+glab issue create \
+  --repo <namespace>/<project> \
+  --title "<title>" \
+  --description "<body>" \
+  --label "<labels>" \
+  --assignee "<handle>"
+
+# Move card (swap scoped workflow label)
+glab issue update <issue-id> \
+  --repo <namespace>/<project> \
+  --remove-label "<current-workflow-label>" \
+  --label "<next-workflow-label>"
+
+# Close
+glab issue close <issue-id> --repo <namespace>/<project>
+```
+
+Column→label map is read from `## Agile Board → columns` in `.claude/pai-orbit-config.md`. If the map is absent, ask the user to supply it before moving.
 
 ## Conventions (always apply)
 
