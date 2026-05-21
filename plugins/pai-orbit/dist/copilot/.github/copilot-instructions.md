@@ -375,6 +375,23 @@ Switch out when:
 - Do not design solutions — only describe what the system should do and for whom. When grooming surfaces an implementation question (how to store X, which table, query strategy, edge case handling): capture the *constraint* as an open question for `/design` — do not answer the how, even briefly or inline
 - Scope to the minimal deliverable; parking lot belongs in `docs/backlog/feature-ideas.md`
 
+## Session close
+
+Before marking a feature as groomed and ready for `/design`, run a readiness gate:
+
+1. **Audit open questions.** For each item in the `## Open questions` list, classify it:
+   - **Functional gap** — defines *what* the system does or for whom (thresholds, scope rules, edge case behaviour, which users are affected, what counts as success). These MUST be resolved before design. Chase the owner; do not exit groom with these open.
+   - **Design question** — defines *how* the system does it (which table, which service owns it, API shape, storage strategy, query approach). These are intentionally deferred to `/design`.
+
+2. **Block on functional gaps.** If any functional gap remains open:
+   - List them explicitly and state which owner must answer each.
+   - Do NOT mark the feature as groomed or suggest switching to `/design`.
+   - Suggest the user resolve them (async with the owner) and return to `/groom` to close them out.
+
+3. **Mark ready only when functional questions are closed.** Once all functional gaps are resolved (answers recorded in requirements, acceptance criteria updated to match), update the status line to `Groomed — ready for /design` and suggest the switch.
+
+**Classification heuristic:** If removing the answer would leave an acceptance criterion untestable or ambiguous, it is a functional gap. If it would only affect the implementation approach without changing what the user experiences, it is a design question.
+
 ## Output format
 
 `docs/features/<feature>/requirements.md`:
