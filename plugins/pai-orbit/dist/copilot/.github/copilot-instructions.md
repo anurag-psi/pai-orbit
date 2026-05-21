@@ -658,7 +658,13 @@ Read the column flow from config. Common flows:
 - **GitHub Projects v2:** `gh project item-edit` is unreliable for column moves — instruct browser drag is faster
 - **Linear:** `linear issue update --state <state>`
 - **Jira:** `jira issue transition`
-- **GitLab:** boards are label-driven — each column maps to a scoped label (e.g. `workflow::In Progress`). Moving a card means removing the current workflow label and adding the next one. Read the column→label map from `## Agile Board → columns` in config, then run the label swap (see CLI section below).
+- **GitLab:** boards are label-driven — each column maps to a label (scoped like `workflow::In Progress` or standalone like `To Do`). Moving a card means removing the current column label and adding the next one. Read the column→label map from `## Agile Board → columns` in config, then run the GitLab label resolution step below before applying any label.
+
+**GitLab label resolution (always run before applying a label):**
+1. Build the match list: column→label entries from config + any label name the user stated verbatim.
+2. Run `glab label list --repo <namespace>/<project>` and check whether the target label exists (case-insensitive match on name).
+3. If found in the live list but not in config — use it and note that the config is stale (suggest re-running `/setup`).
+4. If not found at all — show the full label list to the user and ask them to confirm the intended label before proceeding. Never guess.
 
 ### Closing on ship
 
@@ -705,11 +711,11 @@ glab issue create \
   --label "<labels>" \
   --assignee "<handle>"
 
-# Move card (swap scoped workflow label)
+# Move card (swap column label — scoped or standalone)
 glab issue update <issue-id> \
   --repo <namespace>/<project> \
-  --remove-label "<current-workflow-label>" \
-  --label "<next-workflow-label>"
+  --remove-label "<current-column-label>" \
+  --label "<next-column-label>"
 
 # Close
 glab issue close <issue-id> --repo <namespace>/<project>
@@ -1422,9 +1428,11 @@ glab api /projects/<encoded-namespace%2Fproject>/labels --paginate \
   | jq -r '.[] | "\(.name) (color: \(.color))"'
 ```
 
-Present the full label list and ask:
+Present the full label list — **include every label, not just scoped `workflow::*` ones**. Standalone labels like `To Do`, `Design`, and `Blocked` are valid column markers and must be captured.
 
-> "Which of these labels represent workflow stages (columns)? List them in the order they appear on the board (left → right), separated by commas."
+Ask:
+
+> "Which of these labels represent board columns? List them in the order they appear on the board (left → right), separated by commas. Include both scoped (e.g. `workflow::In Progress`) and standalone (e.g. `To Do`) labels."
 
 After the user confirms the ordered list, re-query to verify each label exists:
 
@@ -1437,6 +1445,12 @@ done
 ```
 
 If any label is missing, warn: "Label '<name>' does not exist on this project. Create it in GitLab first, or correct the name, then confirm again." Do not write the config until all labels are confirmed present.
+
+When writing the `## Agile Board → columns` table in the generated config, include **all** confirmed column labels (both scoped and standalone) and append this comment directly above the table:
+
+```
+# Re-run /setup or update this table if labels change on the board.
+```
 
 ### GitHub Projects v2
 

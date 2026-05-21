@@ -46,9 +46,11 @@ glab api /projects/<encoded-namespace%2Fproject>/labels --paginate \
   | jq -r '.[] | "\(.name) (color: \(.color))"'
 ```
 
-Present the full label list and ask:
+Present the full label list — **include every label, not just scoped `workflow::*` ones**. Standalone labels like `To Do`, `Design`, and `Blocked` are valid column markers and must be captured.
 
-> "Which of these labels represent workflow stages (columns)? List them in the order they appear on the board (left → right), separated by commas."
+Ask:
+
+> "Which of these labels represent board columns? List them in the order they appear on the board (left → right), separated by commas. Include both scoped (e.g. `workflow::In Progress`) and standalone (e.g. `To Do`) labels."
 
 After the user confirms the ordered list, re-query to verify each label exists:
 
@@ -61,6 +63,12 @@ done
 ```
 
 If any label is missing, warn: "Label '<name>' does not exist on this project. Create it in GitLab first, or correct the name, then confirm again." Do not write the config until all labels are confirmed present.
+
+When writing the `## Agile Board → columns` table in the generated config, include **all** confirmed column labels (both scoped and standalone) and append this comment directly above the table:
+
+```
+# Re-run /setup or update this table if labels change on the board.
+```
 
 ### GitHub Projects v2
 

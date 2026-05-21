@@ -31,7 +31,13 @@ Read the column flow from config. Common flows:
 - **GitHub Projects v2:** `gh project item-edit` is unreliable for column moves — instruct browser drag is faster
 - **Linear:** `linear issue update --state <state>`
 - **Jira:** `jira issue transition`
-- **GitLab:** boards are label-driven — each column maps to a scoped label (e.g. `workflow::In Progress`). Moving a card means removing the current workflow label and adding the next one. Read the column→label map from `## Agile Board → columns` in config, then run the label swap (see CLI section below).
+- **GitLab:** boards are label-driven — each column maps to a label (scoped like `workflow::In Progress` or standalone like `To Do`). Moving a card means removing the current column label and adding the next one. Read the column→label map from `## Agile Board → columns` in config, then run the GitLab label resolution step below before applying any label.
+
+**GitLab label resolution (always run before applying a label):**
+1. Build the match list: column→label entries from config + any label name the user stated verbatim.
+2. Run `glab label list --repo <namespace>/<project>` and check whether the target label exists (case-insensitive match on name).
+3. If found in the live list but not in config — use it and note that the config is stale (suggest re-running `/setup`).
+4. If not found at all — show the full label list to the user and ask them to confirm the intended label before proceeding. Never guess.
 
 ### Closing on ship
 
@@ -78,11 +84,11 @@ glab issue create \
   --label "<labels>" \
   --assignee "<handle>"
 
-# Move card (swap scoped workflow label)
+# Move card (swap column label — scoped or standalone)
 glab issue update <issue-id> \
   --repo <namespace>/<project> \
-  --remove-label "<current-workflow-label>" \
-  --label "<next-workflow-label>"
+  --remove-label "<current-column-label>" \
+  --label "<next-column-label>"
 
 # Close
 glab issue close <issue-id> --repo <namespace>/<project>
