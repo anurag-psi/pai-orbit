@@ -1400,7 +1400,7 @@ Ask all unresolved questions in a single block — do not ask one at a time. Cov
 
 1. **Repo structure** (if ambiguous): monorepo with these services, or separate repos?
 2. **Tech stack** (per service, if not clear from files): language + framework?
-3. **Task management**: GitHub Issues / Linear / Jira / Notion / none? Provide board URL(s) and label taxonomy if GitHub Issues or Jira.
+3. **Task management**: GitHub Issues / GitHub Projects v2 / Linear / Jira / GitLab / Notion / none? Provide board URL(s). Do **not** ask for label taxonomy here — the board interview in Step 2b will query it from the API.
 4. **Branching model**: GitHub Flow (feature branches → main) / GitFlow (develop + release branches) / trunk-based (direct to main with flags)?
 5. **Deployment**: cloud provider + target (Cloud Run, Vercel, Railway, AWS ECS, bare VPS, etc.)? One command or per-service?
 6. **Docs home**: in-repo `docs/` / dedicated docs repo (provide path) / Confluence (provide space URL) / Notion (provide workspace)?
@@ -1408,13 +1408,70 @@ Ask all unresolved questions in a single block — do not ask one at a time. Cov
 8. **Architecture (optional — can be done later with `/arch init`):** What services exist and how do they communicate? Any hard constraints — things that must never happen across the codebase? (e.g., "services must not share DBs", "frontend talks only to api-gateway")
 9. **Team**: names, roles, and handles (GitHub username / Linear ID / Jira user ID as relevant). Who is the default assignee for code issues? Who owns domain/expert decisions?
 
+## Step 2b — Board Column Discovery (after Step 2 answers arrive)
+
+Once the user confirms the task-management platform, query the live board for its actual label/state taxonomy. Do **not** assume any column names or label patterns.
+
+### GitLab
+
+```bash
+# Replace <namespace/project> with the project path from the board URL
+glab api /projects/<encoded-namespace%2Fproject>/labels --paginate \
+  | jq -r '.[] | "\(.name) (color: \(.color))"'
+```
+
+Present the full label list and ask:
+
+> "Which of these labels represent workflow stages (columns)? List them in the order they appear on the board (left → right), separated by commas."
+
+After the user confirms the ordered list, re-query to verify each label exists:
+
+```bash
+for label in "<label-1>" "<label-2>" ...; do
+  glab api /projects/<encoded-namespace%2Fproject>/labels \
+    | jq -e --arg n "$label" '.[] | select(.name == $n)' > /dev/null \
+    || echo "MISSING: $label"
+done
+```
+
+If any label is missing, warn: "Label '<name>' does not exist on this project. Create it in GitLab first, or correct the name, then confirm again." Do not write the config until all labels are confirmed present.
+
+### GitHub Projects v2
+
+```bash
+# Replace <owner> and <number> with values from the board URL
+gh project field-list <number> --owner <owner> --format json \
+  | jq -r '.fields[] | select(.name == "Status") | .options[] | .name'
+```
+
+Present the Status field options and ask the user to confirm their column order (they are already ordered but may want to exclude terminal states like "Done" from active workflow).
+
+If `gh project field-list` fails (classic Projects), fall back to asking the user to list column names manually.
+
+### Linear
+
+```bash
+linear team list
+# or via the Linear MCP if available
+```
+
+Present the team's workflow states and ask the user to confirm the ordered column list. If the CLI is unavailable, ask the user to copy the state names from their Linear workspace settings.
+
+### Jira / GitHub Issues / Notion / none
+
+No API query needed. Ask the user to provide their workflow stages (column names) in order as a comma-separated list.
+
+---
+
 ## Step 3 — Generate
 
 Create the following files. Tell the user what was created and what they need to fill in by hand.
 
 ### `.claude/pai-orbit-config.md`
 
-Use the template at `templates/pai-orbit-config.md.template`. Fill all sections from the answers above.
+Use the template at `templates/pai-orbit-config.md.template`. Fill all sections from the answers above and the board discovery in Step 2b.
+
+For the `## Agile Board → columns` table, use **only** the column names and labels confirmed in Step 2b — never write placeholder or example values. Delete the tool-specific comment blocks that don't apply to the chosen board type.
 
 For the `## System Docs` section:
 - If the user answered **no** to the multi-repo question: omit the `## System Docs` section entirely from the generated file (do not write it with blank values).
